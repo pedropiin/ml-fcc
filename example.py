@@ -8,6 +8,7 @@ import sklearn.naive_bayes
 from sklearn.metrics import classification_report
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+import tensorflow as tf
 
 def scale_dataset(df, oversample = False):
     x = df[df.columns[:-1]].values
@@ -56,6 +57,35 @@ def plot_df(df):
         plt.legend()
         plt.show()
 
+def plot_loss(history):
+    """
+    Função elaborada e disponibilizada pela própria
+    documentação do TensorFlow para plotar a perda 
+    a cada epoch (ciclo de aprendizagem)
+    """
+    plt.plot(history.history['loss'], label='loss')
+    plt.plot(history.history['val_loss'], label='val_loss')
+    plt.xlabel("Epoch")
+    plt.ylabel("Binary crossentropy")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def plot_accuracy(history):
+    """
+    Função elaborada e disponibilizada pela própria
+    documentação do TensorFlow para plotar a precisão 
+    a cada epoch (ciclo de aprendizagem)
+    """
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label='val_accuracy')
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
 
 def main() -> None:
     cols = ["fLength", "fWidth", "fSize", "fConc", "fConc1", "fAsym", "fM3Long", "fM3Trans", "fAlpha", "fDist", "class"]
@@ -83,6 +113,8 @@ def main() -> None:
     # knn_model.fit(x_train, y_train)
     # y_pred = knn_model.predict(x_test)
 
+
+
     """
     Implementação de Naive-Bayes como método de classificação.
     Mostrou-se, nesse caso, bem menos efetivo que KNN
@@ -90,6 +122,7 @@ def main() -> None:
     # nb_model = sklearn.naive_bayes.GaussianNB()
     # nb_model = nb_model.fit(x_train, y_train)
     # y_pred = nb_model.predict(x_test)
+
 
     """
     Implementação de uma Regressão Logística Multifatorial.
@@ -101,15 +134,17 @@ def main() -> None:
     # lg_model = lg_model.fit(x_train, y_train)
     # y_pred = lg_model.predict(x_test)
 
+
     """
     Implementação de uma Máquina de Vetor de Suporte (SVM).
     Tenta achar o hiperplano que melhor divide os pontos 
     para classificá-los. Mostrou-se o método mais efetivo 
     de todos para esse dataset
     """
-    svm_model = SVC()
-    svm_model = svm_model.fit(x_train, y_train)
-    y_pred = svm_model.predict(x_test)
+    # svm_model = SVC()
+    # svm_model = svm_model.fit(x_train, y_train)
+    # y_pred = svm_model.predict(x_test)
+
 
     """
     A precisão do nosso modelo representa quantos dos 
@@ -119,6 +154,31 @@ def main() -> None:
     f1-score é uma forma de unir precisão com recall,
     generalizando o report.
     """
-    print(classification_report(y_test, y_pred))
+    # print(classification_report(y_test, y_pred))
+
+
+    """
+    Implementação de uma rede neural para classificação
+    com o TensorFlow. Temos 3 camadas, sendo a última de output,
+    com as 2 primeiras tendo 32 nós, usando a função relu
+    como função de ativação. A última camada possui apenas um nó,
+    e ativa através de uma função sigmoidal
+    """
+    nn_model = tf.keras.Sequential([
+        tf.keras.layers.Dense(32, activation="relu", input_shape=(10,)),
+        tf.keras.layers.Dense(32, activation="relu"),
+        tf.keras.layers.Dense(1, activation="sigmoid")
+    ])
+
+    nn_model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+                    loss='binary_crossentropy',
+                    metrics=['accuracy'])
+    
+    history = nn_model.fit(
+        x_train, y_train, epochs=100, batch_size=32, validation_split=0.2
+    )
+
+    plot_loss(history)
+    plot_accuracy(history)
 
 main()
