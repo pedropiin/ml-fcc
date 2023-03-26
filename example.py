@@ -5,8 +5,9 @@ from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.neighbors import KNeighborsClassifier
 import sklearn.naive_bayes
-# from sklearn.naive_bayes import GuassianNB
 from sklearn.metrics import classification_report
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 
 def scale_dataset(df, oversample = False):
     x = df[df.columns[:-1]].values
@@ -78,9 +79,9 @@ def main() -> None:
     Nesse caso, por testes, viu-se que o intervalo mais 
     preciso é de 7 - 11 vizinhos
     """
-    knn_model = KNeighborsClassifier(n_neighbors=11)
-    knn_model.fit(x_train, y_train)
-    y_pred = knn_model.predict(x_test)
+    # knn_model = KNeighborsClassifier(n_neighbors=11)
+    # knn_model.fit(x_train, y_train)
+    # y_pred = knn_model.predict(x_test)
 
     """
     Implementação de Naive-Bayes como método de classificação.
@@ -89,6 +90,26 @@ def main() -> None:
     # nb_model = sklearn.naive_bayes.GaussianNB()
     # nb_model = nb_model.fit(x_train, y_train)
     # y_pred = nb_model.predict(x_test)
+
+    """
+    Implementação de uma Regressão Logística Multifatorial.
+    Tem como base a função sigmoidal. Por mais que permita
+    diversos parâmetros, mostrou-se mais efetiva que Naive-Bayes,
+    porém menos do que KNN.
+    """
+    # lg_model = LogisticRegression()
+    # lg_model = lg_model.fit(x_train, y_train)
+    # y_pred = lg_model.predict(x_test)
+
+    """
+    Implementação de uma Máquina de Vetor de Suporte (SVM).
+    Tenta achar o hiperplano que melhor divide os pontos 
+    para classificá-los. Mostrou-se o método mais efetivo 
+    de todos para esse dataset
+    """
+    svm_model = SVC()
+    svm_model = svm_model.fit(x_train, y_train)
+    y_pred = svm_model.predict(x_test)
 
     """
     A precisão do nosso modelo representa quantos dos 
