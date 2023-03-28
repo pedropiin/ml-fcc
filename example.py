@@ -85,6 +85,49 @@ def plot_accuracy(history):
     plt.grid(True)
     plt.show()
 
+def plot_history(history):
+    fig, (ax1, ax2) = plt.subplots(1,2)
+
+    ax1.plot(history.history['loss'], label='loss')
+    ax1.plot(history.history['val_loss'], label='val_loss')
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Binary crossentropy")
+    ax1.grid(True)
+
+    ax2.plot(history.history['accuracy'], label='accuracy')
+    ax2.plot(history.history['val_accuracy'], label='val_accuracy')
+    ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("Accuracy")
+
+    plt.show()
+
+def train_model(x_train, y_train, num_nodes, dropout_prob, learning_rate, batch_size, epochs):
+    """
+    Implementação de uma rede neural para classificação
+    com o TensorFlow. Temos 3 camadas, sendo a última de output,
+    com as 2 primeiras tendo 32 nós, usando a função relu
+    como função de ativação. A última camada possui apenas um nó,
+    e ativa através de uma função sigmoidal
+    """
+    nn_model = tf.keras.Sequential([
+        tf.keras.layers.Dense(num_nodes, activation="relu", input_shape=(10,)),
+        tf.keras.layers.Dropout(dropout_prob),
+        tf.keras.layers.Dense(num_nodes, activation="relu",),
+        tf.keras.layers.Dropout(dropout_prob),
+        tf.keras.layers.Dense(1, activation="sigmoid",),
+    ])
+
+    nn_model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate),
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history = nn_model.fit(
+        x_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=0.2
+    )
+
+    return nn_model, history
 
 
 def main() -> None:
@@ -158,27 +201,18 @@ def main() -> None:
 
 
     """
-    Implementação de uma rede neural para classificação
-    com o TensorFlow. Temos 3 camadas, sendo a última de output,
-    com as 2 primeiras tendo 32 nós, usando a função relu
-    como função de ativação. A última camada possui apenas um nó,
-    e ativa através de uma função sigmoidal
+    Realizando grid search para descobrir através de múltiplos
+    testes qual a melhor combinação de configuração para o nosso
+    modelo.
     """
-    nn_model = tf.keras.Sequential([
-        tf.keras.layers.Dense(32, activation="relu", input_shape=(10,)),
-        tf.keras.layers.Dense(32, activation="relu"),
-        tf.keras.layers.Dense(1, activation="sigmoid")
-    ])
+    epochs=100
+    for num_nodes in [16, 32, 64]:
+        for dropout_prob in [0, 0.2]:
+            for learning_rate in [0.1, 0.005, 0.001]:
+                for batch_size in [32, 64, 128]:
+                    print(f"Number of nodes: {num_nodes}; Dropout probability: {dropout_prob}; Learning rate: {learning_rate}; Batch size: {batch_size}.")
+                    nn_model, history = train_model(x_train, y_train, num_nodes, dropout_prob, learning_rate, batch_size, epochs)
+                    plot_history(history)
 
-    nn_model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-                    loss='binary_crossentropy',
-                    metrics=['accuracy'])
-    
-    history = nn_model.fit(
-        x_train, y_train, epochs=100, batch_size=32, validation_split=0.2
-    )
-
-    plot_loss(history)
-    plot_accuracy(history)
 
 main()
