@@ -120,12 +120,12 @@ def train_model(x_train, y_train, num_nodes, dropout_prob, learning_rate, batch_
     nn_model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate),
         loss="binary_crossentropy",
-        metrics=["accuracy"]
-    )
+        metrics=['accuracy']
+        )
 
     history = nn_model.fit(
-        x_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=0.2
-    )
+        x_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=0.2, verbose=0
+        )
 
     return nn_model, history
 
@@ -205,6 +205,8 @@ def main() -> None:
     testes qual a melhor combinação de configuração para o nosso
     modelo.
     """
+    least_val_loss = float('inf')
+    least_loss_model = None
     epochs=100
     for num_nodes in [16, 32, 64]:
         for dropout_prob in [0, 0.2]:
@@ -213,6 +215,15 @@ def main() -> None:
                     print(f"Number of nodes: {num_nodes}; Dropout probability: {dropout_prob}; Learning rate: {learning_rate}; Batch size: {batch_size}.")
                     nn_model, history = train_model(x_train, y_train, num_nodes, dropout_prob, learning_rate, batch_size, epochs)
                     plot_history(history)
+                    val_loss = nn_model.evaluate(x_valid, y_valid)
+                    print(val_loss)
+                    if val_loss[0] < least_val_loss:
+                        least_val_loss = val_loss[0]
+                        least_loss_model = nn_model
+    
+    y_pred = least_loss_model.predict(x_test)
+    y_pred = (y_pred > 0.5).astype(int).reshape(-1,)
 
+    print(classification_report(y_test, y_pred))
 
 main()
